@@ -1,7 +1,8 @@
 $("document").ready(function () {
-  var currentQuestion = 0;
+  var currentQuestionId = 1;
   var totalQuestions = 0;
   var userAnswers = {};
+  var questionHistory = [];
   var all_questions;
   var all_questions_en;
   var all_evidences;
@@ -20,14 +21,14 @@ $("document").ready(function () {
     return fetch("question-utils/all-questions.json")
       .then((response) => response.json())
       .then((data) => {
-        all_questions = data;
-        totalQuestions = data.length;
+        all_questions = data.questions;
+        totalQuestions = data.questions.length;
 
         // Fetch the second JSON file
         return fetch("question-utils/all-questions-en.json")
           .then((response) => response.json())
           .then((dataEn) => {
-            all_questions_en = dataEn;
+            all_questions_en = dataEn.questions;
           })
           .catch((error) => {
             console.error("Failed to fetch all-questions-en.json:", error);
@@ -138,7 +139,7 @@ $("document").ready(function () {
         evidenceListElement.appendChild(listItem);
       });
     } else {
-      console.log(`Evidence with ID '${givenEvidenceID}' not found.`);
+      console.log(`Evidence with ID '${id}' not found.`);
     }
   }
 
@@ -206,13 +207,16 @@ $("document").ready(function () {
   function loadQuestion(questionId, noError) {
     
     $("#nextQuestion").show();
-    if (currentQuestion > 0) {
+    if (questionHistory.length > 0) {
       $("#backButton").show();
-    } 
+    } else {
+      $("#backButton").hide();
+    }
 
+    var question;
     currentLanguage === "greek"
-      ? (question = all_questions[questionId])
-      : (question = all_questions_en[questionId]);
+      ? (question = all_questions.find(q => q.id === questionId))
+      : (question = all_questions_en.find(q => q.id === questionId));
     var questionElement = document.createElement("div");
 
     //If the user has answered the question (checked a value), no error occurs. Otherwise you get an error (meaning that user needs to answer before he continues to the next question)!
@@ -221,7 +225,7 @@ $("document").ready(function () {
                 <div class='govgr-field'>
                     <fieldset class='govgr-fieldset' aria-describedby='radio-country'>
                         <legend role='heading' aria-level='1' class='govgr-fieldset__legend govgr-heading-l'>
-                            ${question.question}
+                            ${question.question_text}
                         </legend>
                         <div class='govgr-radios' id='radios-${questionId}'>
                             <ul>
@@ -230,8 +234,8 @@ $("document").ready(function () {
                                     (option, index) => `
                                     <div class='govgr-radios__item'>
                                         <label class='govgr-label govgr-radios__label'>
-                                            ${option}
-                                            <input class='govgr-radios__input' type='radio' name='question-option' value='${option}' />
+                                            ${option.option_text}
+                                            <input class='govgr-radios__input' type='radio' name='question-option' value='${option.id}' />
                                         </label>
                                     </div>
                                 `
@@ -246,7 +250,7 @@ $("document").ready(function () {
       questionElement.innerHTML = `
             <div class='govgr-field govgr-field__error' id='$id-error'>
             <legend role='heading' aria-level='1' class='govgr-fieldset__legend govgr-heading-l'>
-                        ${question.question}
+                        ${question.question_text}
                     </legend>
                 <fieldset class='govgr-fieldset' aria-describedby='radio-error'>
                     <legend  class='govgr-fieldset__legend govgr-heading-m language-component' data-component='chooseAnswer'>
@@ -264,8 +268,8 @@ $("document").ready(function () {
                                 (option, index) => `
                                 <div class='govgr-radios__item'>
                                     <label class='govgr-label govgr-radios__label'>
-                                        ${option}
-                                        <input class='govgr-radios__input' type='radio' name='question-option' value='${option}' />
+                                        ${option.option_text}
+                                        <input class='govgr-radios__input' type='radio' name='question-option' value='${option.id}' />
                                     </label>
                                 </div>
                             `
@@ -299,11 +303,12 @@ $("document").ready(function () {
   }
 
   function skipToEnd(message) {
+    currentQuestionId = -1;
     const errorEnd = document.createElement("h5");
     const error =
       currentLanguage === "greek"
-        ? "Λυπούμαστε αλλά δεν δικαιούστε το δελτίο μετακίνησης ΑΜΕΑ!"
-        : "We are sorry but you are not entitled to the transportation card for the disabled!";
+        ? "Λυπούμαστε αλλά δεν δικαιούστε την αίτηση!"
+        : "We are sorry but you are not eligible!";
     errorEnd.className = "govgr-error-summary";
     errorEnd.textContent = error + " " + message;
     $(".question-container").html(errorEnd);
@@ -317,82 +322,20 @@ $("document").ready(function () {
   });
 
   function retrieveAnswers() {
-    var allAnswers = [];
-    // currentLanguage === "greek" ? result = "Πρέπει να υποβάλετε id1": result = "You must submit id1";
-
-    getEvidencesById(1);
-    for (var i = 0; i < totalQuestions; i++) {
-      var answer = sessionStorage.getItem("answer_" + i);
-      allAnswers.push(answer);
+    const evidenceListElement = document.getElementById("evidences");
+    if (evidenceListElement) {
+        evidenceListElement.innerHTML = '';
     }
-    if (allAnswers[0] === "2") {
-      getEvidencesById(9);
-    }
-    if (allAnswers[2] === "4") {
-      getEvidencesById(11);
-    }
-    if (allAnswers[4] === "1") {
-      getEvidencesById(6);
-    } else if (allAnswers[4] === "2") {
-      getEvidencesById(7);
-    } else if (allAnswers[4] === "3") {
-      getEvidencesById(8);
-    }
-    if (
-      allAnswers[5] === "1" ||
-      (allAnswers[5] === "2")
-    ) {
-      getEvidencesById(10);
-      currentLanguage === "greek"
-        ? setResult("Δικαιούται και ο συνοδός το ίδιο δελτίο μετακίνησης.")
-        : setResult("The companion is also entitled with the same transportation card.");
-    }
-
-    if (allAnswers[6] === "2") {
-      getEvidencesById(3);
-      getEvidencesById(4);
-    } else if (allAnswers[6] === "3") {
-      getEvidencesById(3);
-      getEvidencesById(5);
-    }
-    if (allAnswers[7] === "1") {
-      getEvidencesById(12);
-      currentLanguage === "greek"
-      ? setResult(
-          "Δικαιούστε έκπτωση 50% για τις εκτός ορίων της περιφέρειας σας μετακινήσεις με υπεραστικά ΚΤΕΛ."
-        )
-      : setResult(
-          "You are entitled to a 50% discount for transportation outside the boundaries of your region with long-distance bus services (named KTEL)."
-        );
-    } else if (allAnswers[7] === "2" && allAnswers[5] !== "1") {
-      getEvidencesById(2);
-      if (allAnswers[8] === "1") {
-        currentLanguage === "greek"
-          ? setResult(
-              "Δικαιούσαι δωρεάν μετακίνησης με τα αστικά μέσα συγκοινωνίας της περιφέρειας σου και έκπτωση 50% για τις εκτός ορίων της περιφέρειας σου μετακινήσεις με υπεραστικά ΚΤΕΛ."
-            )
-          : setResult(
-              "You are entitled to free transportation with the urban public bus of your region and a 50% discount for transportation outside the boundaries of your region with long-distance (intercity) bus services (named KTEL)."
-            );
-      } else if (allAnswers[8] === "2") {
-        currentLanguage === "greek"
-          ? setResult(
-              "Δικαιούσαι έκπτωση 50% για τις εκτός ορίων της περιφέρειας σου μετακινήσεις με υπεραστικά ΚΤΕΛ."
-            )
-          : setResult(
-              "You are entitled to a 50% discount for transportation outside the boundaries of your region with long-distance bus services (named KTEL)."
-            );
+    
+    Object.values(userAnswers).forEach(option => {
+      if (option && option.evidences) {
+        option.evidences.forEach(ev => {
+          const listItem = document.createElement("li");
+          listItem.textContent = ev.required_evidence;
+          evidenceListElement.appendChild(listItem);
+        });
       }
-    }
-    else if(allAnswers[7] === "2" && allAnswers[5] === "1"){
-      currentLanguage === "greek"
-      ? setResult(
-          "Δικαιούσαι δωρεάν μετακίνησης με τα αστικά μέσα συγκοινωνίας της περιφέρειας σου και έκπτωση 50% για τις εκτός ορίων της περιφέρειας σου μετακινήσεις με υπεραστικά ΚΤΕΛ."
-        )
-      : setResult(
-          "You are entitled to free transportation with the urban public bus of your region and a 50% discount for transportation outside the boundaries of your region with long-distance (intercity) bus services (named KTEL)."
-        );
-    }
+    });
   }
 
   function submitForm() {
@@ -409,84 +352,82 @@ $("document").ready(function () {
     evidenceListElement.setAttribute("id", "evidences");
     currentLanguage === "greek"
       ? $(".question-container").append(
-          "<br /><br /><h5 class='answer'>Τα δικαιολογητικά που πρέπει να προσκομίσετε για να λάβετε το δελτίο μετακίνησης είναι τα εξής:</h5><br />"
+          "<br /><br /><h5 class='answer'>Τα δικαιολογητικά που πρέπει να προσκομίσετε είναι τα εξής:</h5><br />"
         )
       : $(".question-container").append(
-          "<br /><br /><h5 class='answer'>The documents you need to provide in order to receive your transportation card are the following:</h5><br />"
+          "<br /><br /><h5 class='answer'>The documents you need to provide are the following:</h5><br />"
         );
     $(".question-container").append(evidenceListElement);
-    $("#faqContainer").load("faq.html");
     retrieveAnswers();
     hideFormBtns();
   }
 
+  function updateNextButtonText(questionId) {
+    var question = currentLanguage === "greek"
+      ? all_questions.find(q => q.id === questionId)
+      : all_questions_en.find(q => q.id === questionId);
+    if (!question) return;
+    var isLast = question.options.every(o => o.next_step === null);
+    if (isLast) {
+      currentLanguage === "greek"
+        ? $("#nextQuestion").text("Υποβολή")
+        : $("#nextQuestion").text("Submit");
+    } else {
+      currentLanguage === "greek"
+        ? $("#nextQuestion").text("Επόμενη Ερώτηση")
+        : $("#nextQuestion").text("Next Question");
+    }
+  }
+
   $("#nextQuestion").click(function () {
     if ($(".govgr-radios__input").is(":checked")) {
-      var selectedRadioButtonIndex =
-        $('input[name="question-option"]').index(
-          $('input[name="question-option"]:checked')
-        ) + 1;
-      console.log(selectedRadioButtonIndex);
-      if (currentQuestion === 0 && selectedRadioButtonIndex === 3) {
-        currentQuestion = -1;
-        currentLanguage === "greek" ? skipToEnd("Μπορείτε να το εκδώσετε ξανά μόνο μια φορά μετά από απώλεια.") : skipToEnd("You can reissue it only one time after loss.");
-      } else if (currentQuestion === 1 && selectedRadioButtonIndex === 2) {
-        currentQuestion = -1;
-        currentLanguage === "greek" ? skipToEnd("Πρέπει να είστε μόνιμος και νόμιμος κάτοικος της Ελλάδας.") : skipToEnd("You must be permanent and legal resident of Greece.");
-      } else if (currentQuestion === 3 && selectedRadioButtonIndex === 2) {
-        currentQuestion = -1;
-        currentLanguage === "greek" ? skipToEnd("Πρέπει να έχετε ποσοστό αναπηρίας 67% και άνω ή να είστε δικαιούχος του επιδόματος ΟΠΕΚΑ.") : skipToEnd("You must have a disability rate of 67% or more or be a beneficiary of the OPEKA benefit.");
+      var selectedOptionId = parseInt(
+        $('input[name="question-option"]:checked').val()
+      );
+      var question = currentLanguage === "greek" 
+        ? all_questions.find(q => q.id === currentQuestionId)
+        : all_questions_en.find(q => q.id === currentQuestionId);
+      var selectedOption = question.options.find(o => o.id === selectedOptionId);
+
+      userAnswers[currentQuestionId] = selectedOption;
+
+      if (selectedOption.terminate) {
+        skipToEnd(selectedOption.termination_reason);
+      } else if (selectedOption.next_step === null) {
+        submitForm();
       } else {
-        //save selectedRadioButtonIndex to the storage
-        userAnswers[currentQuestion] = selectedRadioButtonIndex;
-        sessionStorage.setItem(
-          "answer_" + currentQuestion,
-          selectedRadioButtonIndex
-        ); // save answer to session storage
-
-        //if the questions are finished then...
-        if (currentQuestion + 1 == totalQuestions) {
-          submitForm();
-        }
-        // otherwise...
-        else {
-          currentQuestion++;
-          loadQuestion(currentQuestion, true);
-
-          if (currentQuestion + 1 == totalQuestions) {
-            currentLanguage === "greek"
-              ? $(this).text("Υποβολή")
-              : $(this).text("Submit");
-          }
-        }
+        questionHistory.push(currentQuestionId);
+        currentQuestionId = selectedOption.next_step;
+        loadQuestion(currentQuestionId, true);
+        updateNextButtonText(currentQuestionId);
       }
     } else {
-      loadQuestion(currentQuestion, false);
+      loadQuestion(currentQuestionId, false);
     }
   });
 
   $("#backButton").click(function () {
-    if (currentQuestion > 0) {
-      currentQuestion--;
-      loadQuestion(currentQuestion, true);
+    if (questionHistory.length > 0) {
+      currentQuestionId = questionHistory.pop();
+      loadQuestion(currentQuestionId, true);
 
-      // Retrieve the answer for the previous question from userAnswers
-      var answer = userAnswers[currentQuestion];
+      var answer = userAnswers[currentQuestionId];
       if (answer) {
-        $('input[name="question-option"][value="' + answer + '"]').prop(
+        $('input[name="question-option"][value="' + answer.id + '"]').prop(
           "checked",
           true
         );
       }
+      updateNextButtonText(currentQuestionId);
     }
   });
 
   $("#languageBtn").click(function () {
     toggleLanguage();
-    loadFaqs();
-    // if is false only when the user is skipedToEnd and trying change the language
-    if (currentQuestion >= 0 && currentQuestion < totalQuestions - 1)
-      loadQuestion(currentQuestion, true);
+    if (currentQuestionId !== -1) {
+      loadQuestion(currentQuestionId, true);
+      updateNextButtonText(currentQuestionId);
+    }
   });
 
   $("#questions-btns").hide();
@@ -495,14 +436,10 @@ $("document").ready(function () {
   getQuestions().then(() => {
     // Get all evidences
     getEvidences().then(() => {
-      // Get all faqs 
-      getFaq().then(() => {
-        // Code inside this block executes only after all data is fetched
-        // load  faqs and the first question on page load
-        loadFaqs();
-        $("#faqContainer").show();
-        loadQuestion(currentQuestion, true);
-      });
+      // Code inside this block executes only after all data is fetched
+      // load the first question on page load
+      loadQuestion(currentQuestionId, true);
+      updateNextButtonText(currentQuestionId);
     });
   });
 });

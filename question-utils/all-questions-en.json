@@ -1,65 +1,234 @@
-[
+{
+  "questions": [
     {
-        "id": 0,
-        "question": "Have you issued a transportation card for the disabled before?",
-        "options": ["First time issuing it", "I lost it and want to reissue it", "I lost it for the second time and want to reissue it"]
+      "id": 1,
+      "question_text": "To which category do you belong?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "Natural Person (Category A)",
+          "next_step": 2,
+          "terminate": false
+        },
+        {
+          "id": 2,
+          "option_text": "Legal Entity / Business (Category B)",
+          "next_step": 6,
+          "terminate": false
+        }
+      ]
     },
     {
-        "id": 1,
-        "question": "Are you a permanent and legal resident of Greece?",
-        "options": ["Yes", "No"]
+      "id": 2,
+      "question_text": "Are you over 18 years old?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "Yes",
+          "next_step": 3,
+          "terminate": false,
+          "evidences": [
+            {
+              "id": 1,
+              "required_evidence": "Identity card"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "option_text": "No",
+          "terminate": true,
+          "termination_reason": "Ineligible: You must be over 18 years old."
+        }
+      ]
     },
     {
-        "id": 2,
-        "question": "Which of the following categories do you belong to?",
-        "options": ["Greek citizen", 
-                    "Citizen of EU Member States, and citizens of European Economic Area (EEA) Member States",
-                    "Citizen of countries included in the European Convention ratified by Law 4017/1959 (Government Gazette 246/1959, A')",
-                    "Third-country nationals unable to work due to a work accident on Greek territory, or family members of Greek citizens or EU citizens, as defined in Article 20(2) of Presidential Decree 106/2007 (Government Gazette 135 A'), Article 85(4) of Law 4251/2014 (Government Gazette 80 A'), and Article 31(1) of Law 4540/2018 (Government Gazette 91 A')",
-                    "Recognized refugees permanently residing in Greece, whose stay status in Greece is governed by the provisions of the 1951 Convention relating to the Status of Refugees [Presidential Decree 3989/1959 (Government Gazette 201 A')], as amended by the New York Protocol of 1967 on the Status of Refugees [Law 389/1968 (Government Gazette 125 A')]"
-        ]
+      "id": 3,
+      "question_text": "Do you exercise business activity?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "No",
+          "next_step": 4,
+          "terminate": false
+        },
+        {
+          "id": 2,
+          "option_text": "Yes",
+          "terminate": true,
+          "termination_reason": "Ineligible: Natural persons must not exercise business activity."
+        }
+      ]
     },
     {
-        "id": 3,
-        "question": "Do you have a disability rate of 67% and above or are you entitled to the preferential OPEKA benefit?",
-        "options": ["Yes", "No"]
+      "id": 4,
+      "question_text": "What type of vehicle or acquisition method does your application concern?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "Purchase or leasing of purely electric car/motorcycle/bicycle",
+          "next_step": 5,
+          "terminate": false,
+          "evidences": [
+            {
+              "id": 2,
+              "required_evidence": "Proof of payment / receipt"
+            },
+            {
+              "id": 3,
+              "required_evidence": "Proof of payment / receipt"
+            }
+          ]
+        }
+      ]
     },
     {
-        "id": 4,
-        "question": "Which of the following categories do you belong to?",
-        "options": ["I have a medical certificate",
-                   "I have a decision of the administrative director of an insurance institution or the EFKA (Social Insurance Institute)", 
-                   "Recipient of disability benefits for the disabled people granted by OPEKA (Center for Social Welfare and Solidarity)"
-        ]
+      "id": 5,
+      "question_text": "Do you want an additional subsidy (withdrawal and/or smart charger)?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "Yes, withdrawal of old vehicle",
+          "next_step": null,
+          "terminate": false,
+          "evidences": [
+            {
+              "id": 4,
+              "required_evidence": "Vehicle registration certificate"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "option_text": "Yes, purchase of a smart charger",
+          "next_step": null,
+          "terminate": false,
+          "evidences": [
+            {
+              "id": 5,
+              "required_evidence": "Proof of payment / receipt"
+            },
+            {
+              "id": 6,
+              "required_evidence": "Solemn Declaration"
+            },
+            {
+              "id": 7,
+              "required_evidence": "Document"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "option_text": "No",
+          "next_step": null,
+          "terminate": false
+        }
+      ]
     },
     {
-        "id": 5,
-        "question": "Which of the following categories do you belong to?",
-        "options": ["Blind or visually impaired with a disability rate of 80% and above",
-                    "Severe and Profound Mental Retardation - Intelligence Quotient below 34, or mental retardation with a disability rate of 80% or more, or pervasive developmental disorders (infantile autism, autism) with a disability rate of 80% or more",
-                   "Any disability of at least 67%"
-        ]
+      "id": 6,
+      "question_text": "Is the legal entity a Legal Entity of Public Law (NPDD)?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "No",
+          "next_step": 7,
+          "terminate": false,
+          "evidences": [
+            {
+              "id": 8,
+              "required_evidence": "Certificate of business commencement"
+            },
+            {
+              "id": 9,
+              "required_evidence": "Legalization documents of legal entities"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "option_text": "Yes",
+          "terminate": true,
+          "termination_reason": "Ineligible: NPDDs do not participate in the action."
+        }
+      ]
     },
     {
-        "id": 6,
-        "question": "Please declare your status below:",
-        "options": ["I am applying for the card myself",
-                   "I am an authorized person of the cardholder",
-                   "I am the guardian of the cardholder"
-        ]
+      "id": 7,
+      "question_text": "Does the business have a headquarters or branch in Greece?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "Yes",
+          "next_step": 8,
+          "terminate": false
+        },
+        {
+          "id": 2,
+          "option_text": "No",
+          "terminate": true,
+          "termination_reason": "Ineligible: A headquarters or branch in Greece is required."
+        }
+      ]
     },
     {
-        "id": 7,
-        "question": "Choose for which means of transfer you want the transportation card for the disabled:",
-        "options": ["For long-distance transportation only",
-                   "For all entitlements"
-        ]
+      "id": 8,
+      "question_text": "Is the business in bankruptcy or forced administration?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "No",
+          "next_step": 9,
+          "terminate": false
+        },
+        {
+          "id": 2,
+          "option_text": "Yes",
+          "terminate": true,
+          "termination_reason": "Ineligible: The business must not be in bankruptcy or forced administration."
+        }
+      ]
     },
     {
-        "id": 8,
-        "question": "Choose the category you belong to:",
-        "options": ["Individual income is <strong>less than</strong> 23,000 or family income is <strong>less than</strong> 29,000 (OPEKA income not included)",
-                   "Individual income is <strong>greater than</strong> 23,000 or family income is <strong>greater than</strong> 29,000 (OPEKA income not included)"
-        ]
+      "id": 9,
+      "question_text": "Does the total De Minimis aid over the last 3 years exceed €300,000?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "No",
+          "next_step": 10,
+          "terminate": false
+        },
+        {
+          "id": 2,
+          "option_text": "Yes",
+          "terminate": true,
+          "termination_reason": "Ineligible: Exceedance of De Minimis aid limit (€300,000)."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "question_text": "What type of vehicle or acquisition method does your application concern?",
+      "options": [
+        {
+          "id": 1,
+          "option_text": "Purchase or leasing of electric vehicles (passenger, commercial, bicycles, motorcycles)",
+          "next_step": null,
+          "terminate": false,
+          "evidences": [
+            {
+              "id": 10,
+              "required_evidence": "Proof of payment / receipt"
+            },
+            {
+              "id": 11,
+              "required_evidence": "Proof of payment / receipt"
+            }
+          ]
+        }
+      ]
     }
-]
+  ]
+}
